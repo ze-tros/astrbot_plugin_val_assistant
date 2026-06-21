@@ -19,7 +19,7 @@ async def send_notification(context, user_id: str, matched_items: list,
             f"{current_date} 商店监控通知\n\n"
             f"以下监控商品已上架：\n"
             f"{items_text}\n\n"
-            f"请使用 /每日商店 查看详情\n\n"
+            f"请使用 /瓦 商店 查看详情\n\n"
             f"匹配商品：{', '.join(matched_names)}"
         )
 

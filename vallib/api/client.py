@@ -141,7 +141,7 @@ class APIClient:
                             msg = data.get("errMsg") or data.get("msg") or f"错误码 {code}"
                             logger.info(f"[ValAPI] {code}: {msg}")
                             if self.is_auth_invalid(code, msg):
-                                return None, f"登录过期（{msg}），请重新绑定"
+                                return None, f"登录过期（{msg}），请使用 /瓦 qq 或 /瓦 wx 重新绑定"
                             return None, f"{msg} (code={code})"
                         return data.get("data"), None
             except aiohttp.ClientError as e:

@@ -193,7 +193,7 @@ class ValorantShopPlugin(Star):
                     goods_list, parse_err = self.shop_api.extract_goods_list(response_data2)
                     return goods_list, parse_err
                 return None, f"凭据已刷新但仍无法获取商店: {err_msg2 or '请稍后重试'}"
-            return None, "当前登录凭证已过期，请使用 /瓦 重新绑定后再试"
+            return None, "当前登录凭证已过期，请使用 /瓦 qq 或 /瓦 wx 重新绑定"
 
         return None, err_msg or "获取商店信息失败，请稍后重试"
 
