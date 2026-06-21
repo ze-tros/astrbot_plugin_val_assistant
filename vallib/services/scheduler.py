@@ -163,23 +163,33 @@ class SchedulerService:
                     sessions[sid] = []
                 sessions[sid].append(sub['user_id'])
 
+            success_count = 0
+            fail_count = 0
             for session_id, user_ids in sessions.items():
                 logger.info(f"推送会话 {session_id}，订阅用户: {user_ids}")
                 for user_id in user_ids:
                     try:
-                        await self._push_to_user(user_id, session_id)
+                        ok = await self._push_to_user(user_id, session_id)
+                        if ok:
+                            success_count += 1
+                        else:
+                            fail_count += 1
                         await asyncio.sleep(2.0)
                     except Exception as e:
-                        logger.error(f"推送每日商店给用户 {user_id} 时出错: {e}")
+                        fail_count += 1
+                        logger.error(f"推送每日商店给用户 {user_id} 时出错: {e}", exc_info=True)
                         continue
+            logger.info(f"每日推送完成：成功 {success_count}，失败 {fail_count}")
 
         except Exception as e:
-            logger.error(f"每日商店推送任务执行失败: {e}")
+            logger.error(f"每日商店推送任务执行失败: {e}", exc_info=True)
 
-    async def _push_to_user(self, user_id: str, session_id: str):
+    async def _push_to_user(self, user_id: str, session_id: str) -> bool:
+        """向单用户推送每日商店，返回是否成功。"""
         user_config = await self.repo.get_user_config(user_id)
         if not user_config:
-            return
+            logger.warning(f"推送跳过: 用户 {user_id} 未绑定")
+            return False
 
         goods_list = await self.shop_api.get_shop_items_raw(user_id, user_config)
         if not goods_list:
@@ -189,7 +199,8 @@ class SchedulerService:
                 if goods_list:
                     user_config = new_config
             if not goods_list:
-                return
+                logger.warning(f"推送跳过: 用户 {user_id} 商店数据为空")
+                return False
 
         # 自动同步角色名
         if not user_config.get("role_name"):
@@ -207,7 +218,8 @@ class SchedulerService:
         )
 
         if not shop_data:
-            return
+            logger.warning(f"推送跳过: 用户 {user_id} 商店图片生成失败")
+            return False
 
         message_chain = MessageChain()
         current_date = datetime.now().strftime("%Y-%m-%d")
@@ -221,6 +233,7 @@ class SchedulerService:
         await self.context.send_message(session_id, image_chain)
 
         logger.info(f"已推送每日商店给用户 {user_id}，会话: {session_id}")
+        return True
 
     async def _auto_sync_role(self, user_id: str, user_config: Dict[str, Any]):
         try:
