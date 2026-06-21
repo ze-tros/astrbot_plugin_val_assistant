@@ -87,6 +87,7 @@ class ValorantShopPlugin(Star):
             shop_api=self.shop_api,
             api_client=self.api,
             shop_image=self.shop_image,
+            html_render_func=self.html_render,
         )
         await self.scheduler.setup()
         logger.info("插件初始化完成")

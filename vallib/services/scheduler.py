@@ -30,6 +30,7 @@ class SchedulerService:
         shop_api: ShopAPI,
         api_client,
         shop_image: ShopImageService,
+        html_render_func,
     ):
         self.context = context
         self.config = config
@@ -37,6 +38,7 @@ class SchedulerService:
         self.shop_api = shop_api
         self.api_client = api_client
         self.shop_image = shop_image
+        self.html_render_func = html_render_func
         self._scheduler = None
 
     def _cf(self, key: str, default=None):
@@ -198,7 +200,7 @@ class SchedulerService:
         push_date = datetime.now().strftime("%Y-%m-%d")
         shop_data, _ = await self.shop_image.generate(
             user_id, user_config,
-            html_render_func=self.context.html_render,
+            html_render_func=self.html_render_func,
             goods_list=goods_list,
             title_text=title_name,
             date_str=push_date,
